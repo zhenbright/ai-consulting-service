@@ -870,54 +870,54 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('customer.overview'),
                     'icon' => 'ti ti-home',
                 ])
-                ->registerItem([
-                    'id' => 'cms-customer-orders',
-                    'priority' => 30,
-                    'name' => __('Orders'),
-                    'url' => fn () => route('customer.orders'),
-                    'icon' => 'ti ti-shopping-cart',
-                ])
-                ->when(EcommerceHelper::isReviewEnabled(), function (DashboardMenuSupport $dashboardMenu) {
-                    $dashboardMenu->registerItem([
-                        'id' => 'cms-customer-product-reviews',
-                        'priority' => 40,
-                        'name' => __('Reviews'),
-                        'url' => fn () => route('customer.product-reviews'),
-                        'icon' => 'ti ti-star',
-                    ]);
-                })
-                ->when(EcommerceHelper::isEnabledSupportDigitalProducts(), function (DashboardMenuSupport $dashboardMenu) {
-                    $dashboardMenu->registerItem([
-                        'id' => 'cms-customer-downloads',
-                        'priority' => 50,
-                        'name' => __('Downloads'),
-                        'url' => fn () => route('customer.downloads'),
-                        'icon' => 'ti ti-download',
-                    ]);
-                })
-                ->when(EcommerceHelper::isOrderReturnEnabled(), function (DashboardMenuSupport $dashboardMenu) {
-                    $dashboardMenu->registerItem([
-                        'id' => 'cms-customer-order-returns',
-                        'priority' => 50,
-                        'name' => __('Order Return Requests'),
-                        'url' => fn () => route('customer.order_returns'),
-                        'icon' => 'ti ti-shopping-cart-cancel',
-                    ]);
-                })
-                ->registerItem([
-                    'id' => 'cms-customer-address',
-                    'priority' => 60,
-                    'name' => __('Addresses'),
-                    'url' => fn () => route('customer.address'),
-                    'icon' => 'ti ti-book',
-                ])
-                ->registerItem([
-                    'id' => 'cms-customer-edit-account',
-                    'priority' => 70,
-                    'name' => __('Account Settings'),
-                    'url' => fn () => route('customer.edit-account'),
-                    'icon' => 'ti ti-settings',
-                ])
+                // ->registerItem([
+                //     'id' => 'cms-customer-orders',
+                //     'priority' => 30,
+                //     'name' => __('Orders'),
+                //     'url' => fn () => route('customer.orders'),
+                //     'icon' => 'ti ti-shopping-cart',
+                // ])
+                // ->when(EcommerceHelper::isReviewEnabled(), function (DashboardMenuSupport $dashboardMenu) {
+                //     $dashboardMenu->registerItem([
+                //         'id' => 'cms-customer-product-reviews',
+                //         'priority' => 40,
+                //         'name' => __('Reviews'),
+                //         'url' => fn () => route('customer.product-reviews'),
+                //         'icon' => 'ti ti-star',
+                //     ]);
+                // })
+                // ->when(EcommerceHelper::isEnabledSupportDigitalProducts(), function (DashboardMenuSupport $dashboardMenu) {
+                //     $dashboardMenu->registerItem([
+                //         'id' => 'cms-customer-downloads',
+                //         'priority' => 50,
+                //         'name' => __('Downloads'),
+                //         'url' => fn () => route('customer.downloads'),
+                //         'icon' => 'ti ti-download',
+                //     ]);
+                // })
+                // ->when(EcommerceHelper::isOrderReturnEnabled(), function (DashboardMenuSupport $dashboardMenu) {
+                //     $dashboardMenu->registerItem([
+                //         'id' => 'cms-customer-order-returns',
+                //         'priority' => 50,
+                //         'name' => __('Order Return Requests'),
+                //         'url' => fn () => route('customer.order_returns'),
+                //         'icon' => 'ti ti-shopping-cart-cancel',
+                //     ]);
+                // })
+                // ->registerItem([
+                //     'id' => 'cms-customer-address',
+                //     'priority' => 60,
+                //     'name' => __('Addresses'),
+                //     'url' => fn () => route('customer.address'),
+                //     'icon' => 'ti ti-book',
+                // ])
+                // ->registerItem([
+                //     'id' => 'cms-customer-edit-account',
+                //     'priority' => 70,
+                //     'name' => __('Account Settings'),
+                //     'url' => fn () => route('customer.edit-account'),
+                //     'icon' => 'ti ti-settings',
+                // ])
                 ->registerItem([
                     'id' => 'cms-customer-logout',
                     'priority' => 999,

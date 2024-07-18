@@ -24,7 +24,7 @@
                     'name' => $customer->name,
                 ]),
             ) !!}</h4>
-                <p>{!! BaseHelper::clean(
+                {{-- <p>{!! BaseHelper::clean(
                 __(
                     'From your account dashboard you can view your <a class="text-primary" href=":order">recent orders</a>, manage your <a class="text-primary" href=":addresses">shipping and billing addresses</a>, and <a class="text-primary" href=":edit_account">edit your password and account details</a>.',
                     [
@@ -33,11 +33,11 @@
                         'edit_account' => route('customer.edit-account'),
                     ],
                 ),
-            ) !!}</p>
+            ) !!}</p> --}}
             </div>
         </div>
 
-        @if (! $customer->orders()->exists())
+        {{-- @if (! $customer->orders()->exists())
             <div
                 role="alert"
                 class="alert alert-info d-flex align-items-center justify-content-between mt-3 mb-0"
@@ -53,6 +53,6 @@
                     </div>
                 </div>
             </div>
-        @endif
+        @endif --}}
     </div>
 @endsection
