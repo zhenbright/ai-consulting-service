@@ -16,3 +16,6 @@ use App\Http\Controllers\AdminController;
 
 Route::get('/ai-generate/{view}', [GenerateController::class, 'index']);
 // Route::get('/admin', [AdminController::class, 'index']);
+Route::get('/project', [AdminController::class, 'index']);
+Route::get('/contact-us', [AdminController::class, 'index']);
+Route::get('/customer/overview', [AdminController::class, 'index']);

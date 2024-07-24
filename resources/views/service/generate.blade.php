@@ -8,119 +8,68 @@
 
 @section('content')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
-    .drag-area {
-        border: 2px dashed #ccc;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-    }
-    .drag-area.dragover {
-        background-color: #f1f1f1;
-    }
-    #btn-generate::after{
-        content: none;
-    }
-    .page-count-label {
-        width: 100px;
-    }
-    .page-count {
-        width: 100px;
-    }
-    .service-list {
-        list-style: none;
-    }
-    .service-list li.checked i {
-        visibility: visible;
-    }
-    .service-list a{
-        color: #14176C !important;
-    }
-    .service-list a:hover {
-        cursor: pointer;
-        text-decoration: solid;
-    }
-    .btn-no-next::after {
-        content: none;
-    }
-    .display-none {
-        display: none;
-    }
-    .pdf-view {
-        border: 2px solid #14176C;
-    }
-</style>
-    <div class="container my-5">
-        <div id="message"></div>
-        <div class="row">
-            <div class="col-md-3 border-r-1">
-                <div class="sidebar__widget sidebar__widget-two">
-                    <div class="sidebar__cat-list-two">
-                        <ul class="service-list">
-                            @foreach($services as $service)
-                                <li class="mt-2 d-flex gap-2 align-items-center">
-                                    <i class="fa fa-check @if($service->name != $view) invisible @endif" ></i>
-                                    <a  class="truncate-1-custom" title="{{ $service->name }}">{{ $service->name }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-9">      
-                <div class="row" style="display: block;"  id="prompt-view">
-                    <div class="text-center">
-                        <h2 id="prompt-title">
-                            {{$view}}
-                        </h2>
-                    </div>  
-                    <div class="row text-right">
-                        <div class="col-md-4 form-group d-flex align-items-center gap-4 mt-2">
-                            <label for="analysis" class="page-count-label" >Analysis : </label>
-                            <input type="number" class="form-control page-count" id="analysis" />
-                        </div>
-                        <div class="col-md-4 form-group d-flex  align-items-center gap-4  mt-2">
-                            <label for="results" class="page-count-label">Results : </label>
-                            <input type="number" class="form-control page-count" id="results" />
-                        </div>
-                        <div class="col-md-4 form-group d-flex align-items-center gap-4 mt-2">
-                            <label for="use_case" class="page-count-label">Use Case : </label>
-                            <input type="number" class="form-control page-count" id="use_case" />
-                        </div>
-                    </div>
-                    <div class="form-group p-0 mt-2">
-                        <textarea class="form-control" id="prompt-text" rows="5" placeholder="Please input text here."></textarea>
-                    </div>
-                    <div class="drag-area mt-2" id="dragArea">
-                        <h4 id="file-upload-title">Drag & Drop to Upload File</h4>
-                        <button class="btn btn-primary mt-2" id="browseFile">Browse File</button>
-                        <input type="file" id="fileInput" name="file" hidden>
-                    </div>
-                    <div class="mt-3 justify-content-center d-flex p-0">
-                        <button class="btn btn-two justify-content-center gap-3" id="btn-generate">
-                                GENERATE
-                                <div class="spinner-border text-white display-none" id="loading-pdf" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                        </button>
-                    </div>
-                </div>
-                <div class="row" style="display: none;" id="result-view">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a class="btn btn-two btn-no-next"  href="{{asset('3.pdf')}}" download> Download <i class="fa fa-download pl-5"></i></a>
-                        <button class="btn btn-two btn-no-next" id="btn-back"> <i class="fa fa-arrow-left pr-10"></i> Back </button>
-                    </div>
-                    <canvas id="pdfCanvas" class="pdf-view mt-2"></canvas>
-                </div>
-            </div>
-
+<link href="{{asset('themes/apexa/css/app.css')}}" rel="stylesheet" />
+<div class="container my-5">
+    <div id="message"></div>
+    <div class="row" style="display: block;"  id="prompt-view">
+        <div class="text-center">
+            <h2 id="prompt-title">
+                {{$view}}
+            </h2>
+        </div>  
+        <div class="form-group d-flex gap-2 p-0 align-items-center mt-4"  >
+            <label for="select-service"> Service: </label>
+            <select class="form-select" id="select-service" placeholder="Choose one service">
+                <option></option>
+                @foreach ($services as $service)
+                    <option value="{{$service->id}}">{{$service->name}}</option>
+                @endforeach
+            </select>
         </div>
-
+        <div class="row text-right  mt-2">
+            <div class="col-md-4 form-group d-flex align-items-center gap-2 mt-2">
+                <label for="analysis" class="page-count-label" >Analysis : </label>
+                <input type="number" class="form-control page-count" id="analysis" />
+            </div>
+            <div class="col-md-4 form-group d-flex  align-items-center gap-2  mt-2">
+                <label for="result" class="page-count-label">Results : </label>
+                <input type="number" class="form-control page-count" id="result" />
+            </div>
+            <div class="col-md-4 form-group d-flex align-items-center gap-2 mt-2">
+                <label for="use_case" class="page-count-label">Use Case : </label>
+                <input type="number" class="form-control page-count" id="use_case" />
+            </div>
+        </div>
+        <div class="form-group p-0  mt-4">
+            <textarea class="form-control" id="prompt-text" rows="5" placeholder="Please input prompt here."></textarea>
+        </div>
+        <div class="drag-area mt-2" id="dragArea">
+            <h4 id="file-upload-title">Drag & Drop to Upload File</h4>
+            <button class="btn btn-primary mt-2" id="browseFile">Browse File</button>
+            <input type="file" id="fileInput" name="file" hidden>
+        </div>
+        <div class="mt-3 justify-content-center d-flex p-0">
+            <button class="btn btn-two justify-content-center gap-3" id="btn-generate">
+                    GENERATE
+                    <div class="spinner-border text-white display-none" id="loading-pdf" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+            </button>
+        </div>
     </div>
+    <div class="row" style="display: none;" id="result-view">
+        <div class="d-flex justify-content-end gap-2">
+            <a class="btn btn-two btn-no-next"  href="{{asset('3.pdf')}}" download> Download <i class="fa fa-download pl-5"></i></a>
+            <button class="btn btn-two btn-no-next" id="btn-back"> <i class="fa fa-arrow-left pr-10"></i> Back </button>
+        </div>
+        <canvas id="pdfCanvas" class="pdf-view mt-2"></canvas>
+    </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 <script>
-      $(document).ready(function () {
+    var services = @json($services);
+    console.log(services);
+    $(document).ready(function () {
         var dragArea = $('#dragArea');
         var fileInput = $('#fileInput');
         $('#browseFile').click(function () {
@@ -226,6 +175,14 @@
         $("#btn-back").click(function() {
             $("#prompt-view").css('display', 'block');
             $("#result-view").css('display', 'none');
+        })
+        $("#select-service").change(function(){
+            let selected_service_id = $(this).val();
+            const service = services.find(s => s.id == selected_service_id);
+            console.log(service);
+            $("#analysis").val(service.page_analysis);
+            $("#result").val(service.page_result);
+            $("#use_case").val(service.page_case_use);
         })
     });
 
