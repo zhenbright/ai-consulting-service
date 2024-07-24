@@ -65,10 +65,11 @@
         <canvas id="pdfCanvas" class="pdf-view mt-2"></canvas>
     </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+{{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script> --}}
 <script>
     var services = @json($services);
-    console.log(services);
+    var service = null;
+    var promptFiles = [];
     $(document).ready(function () {
         var dragArea = $('#dragArea');
         var fileInput = $('#fileInput');
@@ -106,8 +107,9 @@
         });
 
         function handleFiles(files) {
+            promptFiles.push(files[0]);
             var formData = new FormData();
-            $("#file-upload-title").text(files[0].name)
+            $("#file-upload-title").text(promptFiles.map(pf => pf.name).join(','))
         }
 
         $(".truncate-1-custom").click(function(){
@@ -124,53 +126,68 @@
 
         $("#btn-generate").click(function() {
             $("#loading-pdf").removeClass('display-none');
-            setTimeout(() => {
-                 //Setting URL of the PDF document that you want to render
-                const url = "{{asset('3.pdf')}}";
-                // Rendering the PDF on the canvas
-                pdfjsLib.getDocument(url).promise.then(pdf => {
-                    // Loading the first page of the PDF
-                    const pageNumber = 1;
-                    return pdf.getPage(pageNumber);
-                }).then(page => {
+            // setTimeout(() => {
+            //      //Setting URL of the PDF document that you want to render
+            //     const url = "{{asset('3.pdf')}}";
+            //     // Rendering the PDF on the canvas
+            //     pdfjsLib.getDocument(url).promise.then(pdf => {
+            //         // Loading the first page of the PDF
+            //         const pageNumber = 1;
+            //         return pdf.getPage(pageNumber);
+            //     }).then(page => {
                 
-                    // Setting the PDF zoom level to 100% by setting scale to 1
-                    const viewport = page.getViewport({ scale: 1 });
+            //         // Setting the PDF zoom level to 100% by setting scale to 1
+            //         const viewport = page.getViewport({ scale: 1 });
                 
-                    // Prepare canvas using PDF page dimensions
-                    const canvas = document.getElementById("pdfCanvas");
-                    const context = canvas.getContext("2d");
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+            //         // Prepare canvas using PDF page dimensions
+            //         const canvas = document.getElementById("pdfCanvas");
+            //         const context = canvas.getContext("2d");
+            //         canvas.height = viewport.height;
+            //         canvas.width = viewport.width;
                 
-                    // Render PDF page into canvas context
-                    const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport,
-                    };
+            //         // Render PDF page into canvas context
+            //         const renderContext = {
+            //         canvasContext: context,
+            //         viewport: viewport,
+            //         };
                 
-                    return page.render(renderContext);
-                });
-                $("#loading-pdf").addClass('display-none');
-                $("#prompt-view").css('display', 'none');
-                $("#result-view").css('display', 'block');
-            }, 4000);
-            // formData.append('file', files[0]);
-            // formData.append('_token', '{{ csrf_token() }}');
+            //         return page.render(renderContext);
+            //     });
+            //     $("#loading-pdf").addClass('display-none');
+            //     $("#prompt-view").css('display', 'none');
+            //     $("#result-view").css('display', 'block');
+            // }, 4000);
+            var promptText = $("#prompt-text").val();
+            var formData = new FormData();
 
-            // $.ajax({
-            //     type: 'POST',
-                
-            //     data: formData,
-            //     contentType: false,
-            //     processData: false,
-            //     success: function (response) {
-            //         $('#message').html('<div class="alert alert-success">' + response.success + '</div>');
-            //     },
-            //     error: function (response) {
-            //         $('#message').html('<div class="alert alert-danger">' + response.responseJSON.error + '</div>');
-            //     }
-            // });
+            // Append the CSRF token
+            formData.append('_token', "{{csrf_token()}}");
+
+            // Append the files
+            for (var i = 0; i < promptFiles.length; i++) {
+                formData.append('files[]', promptFiles[i]);
+            }
+
+            // Append other form data
+            formData.append('service', service.name);
+            formData.append('promptText', promptText);
+            formData.append('pageAnalysis', $("#analysis").val());
+            formData.append('pageResult', $("#result").val());
+            formData.append('pageUseCase', $("#use_case").val());
+            console.log(formData);
+            $.ajax({
+                type: 'POST',
+                url: "{{url('ai-generate')}}",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('#message').html('<div class="alert alert-success">' + response.success + '</div>');
+                },
+                error: function (response) {
+                    $('#message').html('<div class="alert alert-danger">' + response.responseJSON.error + '</div>');
+                }
+            });
         })
         $("#btn-back").click(function() {
             $("#prompt-view").css('display', 'block');
@@ -178,8 +195,8 @@
         })
         $("#select-service").change(function(){
             let selected_service_id = $(this).val();
-            const service = services.find(s => s.id == selected_service_id);
-            console.log(service);
+            service = services.find(s => s.id == selected_service_id);
+            
             $("#analysis").val(service.page_analysis);
             $("#result").val(service.page_result);
             $("#use_case").val(service.page_case_use);
