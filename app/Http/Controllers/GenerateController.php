@@ -24,7 +24,7 @@ class GenerateController extends Controller
             'service' => 'required|string'
         ]);
   
-        $serverUrl = env('SERVICE_BACKEND_URL', 'localhost:5000/generate');
+        $serverUrl = env('SERVICE_BACKEND_URL', 'localhost:5000');
 
         $service = $request->input('service');
         $promptText = $request->input('promptText');
@@ -65,12 +65,20 @@ class GenerateController extends Controller
             ];
         }
 
-        // Send the files and additional fields to FastAPI server
-        $response = $client->post($serverUrl, [
-            'multipart' => $multipart
-        ]);
-
-        // Return the response from FastAPI server
-        return response()->json(json_decode($response->getBody(), true));
+        try {
+            // Send the files and additional fields to FastAPI server
+            $response = $client->post($serverUrl.'/generate', [
+                'multipart' => $multipart
+            ]);
+            // Return the response from FastAPI server
+            $response = json_decode( $response->getBody());
+            return response()->json([
+                'file_url' => $serverUrl.$response->file_url,
+                'success' => $response->success
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
     }
 }

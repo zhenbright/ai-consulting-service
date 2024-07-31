@@ -8,6 +8,7 @@
 
 @section('content')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js"></script>
 <link href="{{asset('themes/apexa/css/app.css')}}" rel="stylesheet" />
 <div class="container my-5">
     <div id="message"></div>
@@ -59,13 +60,13 @@
     </div>
     <div class="row" style="display: none;" id="result-view">
         <div class="d-flex justify-content-end gap-2">
-            <a class="btn btn-two btn-no-next"  href="{{asset('3.pdf')}}" download> Download <i class="fa fa-download pl-5"></i></a>
+            <a class="btn btn-two btn-no-next" id="btn-download"  href="{{asset('3.pdf')}}" download> Download <i class="fa fa-download pl-5"></i></a>
             <button class="btn btn-two btn-no-next" id="btn-back"> <i class="fa fa-arrow-left pr-10"></i> Back </button>
         </div>
         <canvas id="pdfCanvas" class="pdf-view mt-2"></canvas>
     </div>
 </div>
-{{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script> --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 <script>
     var services = @json($services);
     var service = null;
@@ -125,38 +126,8 @@
         })
 
         $("#btn-generate").click(function() {
+            $('#message').html('');
             $("#loading-pdf").removeClass('display-none');
-            // setTimeout(() => {
-            //      //Setting URL of the PDF document that you want to render
-            //     const url = "{{asset('3.pdf')}}";
-            //     // Rendering the PDF on the canvas
-            //     pdfjsLib.getDocument(url).promise.then(pdf => {
-            //         // Loading the first page of the PDF
-            //         const pageNumber = 1;
-            //         return pdf.getPage(pageNumber);
-            //     }).then(page => {
-                
-            //         // Setting the PDF zoom level to 100% by setting scale to 1
-            //         const viewport = page.getViewport({ scale: 1 });
-                
-            //         // Prepare canvas using PDF page dimensions
-            //         const canvas = document.getElementById("pdfCanvas");
-            //         const context = canvas.getContext("2d");
-            //         canvas.height = viewport.height;
-            //         canvas.width = viewport.width;
-                
-            //         // Render PDF page into canvas context
-            //         const renderContext = {
-            //         canvasContext: context,
-            //         viewport: viewport,
-            //         };
-                
-            //         return page.render(renderContext);
-            //     });
-            //     $("#loading-pdf").addClass('display-none');
-            //     $("#prompt-view").css('display', 'none');
-            //     $("#result-view").css('display', 'block');
-            // }, 4000);
             var promptText = $("#prompt-text").val();
             var formData = new FormData();
 
@@ -174,7 +145,9 @@
             formData.append('pageAnalysis', $("#analysis").val());
             formData.append('pageResult', $("#result").val());
             formData.append('pageUseCase', $("#use_case").val());
-            console.log(formData);
+            
+            $("#preloader").css('background-color', '#ffffff36');
+            $("#preloader").show();
             $.ajax({
                 type: 'POST',
                 url: "{{url('ai-generate')}}",
@@ -182,9 +155,50 @@
                 contentType: false,
                 processData: false,
                 success: function (response) {
-                    $('#message').html('<div class="alert alert-success">' + response.success + '</div>');
+                    $("#preloader").hide();
+                    if (response.success) {
+                        //Setting URL of the PDF document that you want to render
+                        const url = `${response.file_url}`;
+                        fetch(url)
+                            .then(response => response.arrayBuffer())
+                            .then(data => {
+                                const container = document.getElementById('pdfCanvas');
+                                docx.render(data, container);
+                            })
+                            .catch(error => console.error('Error fetching the DOCX file:', error));
+                        $("#btn-download").attr('href', url);
+                        // Rendering the PDF on the canvas
+                        // pdfjsLib.getDocument(url).promise.then(pdf => {
+                        //     // Loading the first page of the PDF
+                        //     const pageNumber = 1;
+                        //     return pdf.getPage(pageNumber);
+                        // }).then(page => {
+                        
+                        //     // Setting the PDF zoom level to 100% by setting scale to 1
+                        //     const viewport = page.getViewport({ scale: 1 });
+                        
+                        //     // Prepare canvas using PDF page dimensions
+                        //     const canvas = document.getElementById("pdfCanvas");
+                        //     const context = canvas.getContext("2d");
+                        //     canvas.height = viewport.height;
+                        //     canvas.width = viewport.width;
+                        
+                        //     // Render PDF page into canvas context
+                        //     const renderContext = {
+                        //     canvasContext: context,
+                        //     viewport: viewport,
+                        //     };
+                        
+                        //     return page.render(renderContext);
+                        // });
+                        $("#loading-pdf").addClass('display-none');
+                        $("#prompt-view").css('display', 'none');
+                        $("#result-view").css('display', 'block');
+                    }
                 },
                 error: function (response) {
+                    $("#preloader").hide();
+                    $("#loading-pdf").addClass('display-none');
                     $('#message').html('<div class="alert alert-danger">' + response.responseJSON.error + '</div>');
                 }
             });
