@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Botble\Portfolio\Models\Service;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
+use App\Models\History;
+use App\Models\ServiceRequirement;
 
 class GenerateController extends Controller
 {
@@ -13,7 +15,11 @@ class GenerateController extends Controller
 
     public function index($view='') {
         $services  = Service::all();
-        return view('service.generate', ['view' => $view, 'services' => $services]);
+        $user = auth('customer')->user();
+        $histories = [];
+        if (!is_null($user))
+            $histories = History::where('user_id', $user->id)->latest()->take(5)->get();
+        return view('service.generate', ['view' => $view, 'services' => $services, 'histories' => $histories]);
     }
 
     public function generate(Request $request) {
@@ -23,21 +29,25 @@ class GenerateController extends Controller
             'files.*' => 'required|file',
             'service' => 'required|string'
         ]);
-  
+        $user_id = auth('customer')->user()->id;
         $serverUrl = env('SERVICE_BACKEND_URL', 'localhost:5000');
 
-        $service = $request->input('service');
+        $serviceTitle = $request->input('service');
         $promptText = $request->input('promptText');
         $pageAnalysis = $request->input('pageAnalysis');
-        $pageResult = $request->input('pageResult');+
+        $pageResult = $request->input('pageResult');
         $pageUseCase = $request->input('pageUseCase');
+        $service_id = $request->input('service_id');
+
+        $serviceRequirement = ServiceRequirement::where('service_id', $service_id)->first();
+        
         $client = new Client();
 
         // Prepare files for upload
         $multipart = [
             [
                 'name'     => 'service',
-                'contents' => $service
+                'contents' => $serviceTitle
             ],
             [
                 'name'     => 'promptText',
@@ -54,6 +64,10 @@ class GenerateController extends Controller
             [
                 'name'     => 'pageUseCase',
                 'contents' => $pageUseCase
+            ],
+            [
+                'name'     => 'requirement',
+                'contents' => $serviceRequirement->requirement
             ]
         ];
 
@@ -72,8 +86,17 @@ class GenerateController extends Controller
             ]);
             // Return the response from FastAPI server
             $response = json_decode( $response->getBody());
+            
+            $history = History::create([
+                'user_id' => $user_id,
+                'service_id' => $service_id,
+                'pdf_url' => $serverUrl.$response->pdf_url,
+                'doc_url' => $serverUrl.$response->file_url,
+            ]);
+            
             return response()->json([
                 'file_url' => $serverUrl.$response->file_url,
+                'pdf_url' => $serverUrl.$response->pdf_url,
                 'success' => $response->success
             ]);
         } catch (\Throwable $th) {
